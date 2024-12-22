@@ -30,6 +30,17 @@ The solution consists of:
 4. IAM roles and policies for necessary permissions
 5. S3 bucket for storing logs and artifacts
 
+## Demo
+
+### Attach a Privilged Policy
+![Attach a Privileged Policy](/images/shadow-admin-blurred-gif.gif)
+
+### Create an Inline Policy with Privileged Access
+![Creating an Admin Inline Policy](/images/full-admin-access-blurred-gif.gif)
+
+### Create a New Policy with Privileged Access
+![Creating a New Policy with Full Admin Access](/images/full-admin-access-blurred-gif.gif)
+
 ## Prerequisites
 
 - AWS Account
