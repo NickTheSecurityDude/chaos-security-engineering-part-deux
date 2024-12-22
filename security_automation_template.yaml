@@ -1,0 +1,126 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  CloudFormation template for deploying an automated IAM policy monitoring solution.
+  This infrastructure monitors IAM policy changes and alerts on potentially risky configurations.
+  
+  Resources created:
+  - SNS Topic for notifications
+  - IAM Role for Lambda execution
+  - Lambda Function for policy analysis
+  - EventBridge Rule to monitor IAM changes
+  - CloudWatch Log Group for Lambda logs
+  
+  Version: v1.0.0-beta.1
+  Author: Nick the Security Dude
+  Date: 12-22-2024
+  
+  DISCLAIMER: This template is provided for learning and demonstration purposes only, on an as-is basis 
+  without any guarantees or warranties.
+  
+  LICENSE: This work is licensed under the Creative Commons Attribution-NonCommercial (CC BY-NC) license.
+
+Resources:
+
+  PolicyViolationTopic:
+    Type: 'AWS::SNS::Topic'
+    Properties:
+      TopicName: 'iam-policy-violation-notifications'
+
+  LambdaExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: 'policy_monitor_lambda_role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'policy_monitor_lambda_policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: 'arn:aws:logs:*:*:*'
+              - Effect: Allow
+                Action:
+                  - 'iam:ListAttachedUserPolicies'
+                  - 'iam:CreatePolicy'
+                  - 'iam:DeletePolicy'
+                  - 'iam:ListAttachedGroupPolicies'
+                  - 'iam:ListAttachedRolePolicies'
+                  - 'iam:GetPolicy'
+                  - 'iam:GetPolicyVersion'
+                  - 'iam:GetUserPolicy'
+                  - 'iam:GetGroupPolicy'
+                  - 'iam:GetRolePolicy'
+                  - 'iam:ListUserPolicies'
+                  - 'iam:ListGroupPolicies'
+                  - 'iam:ListRolePolicies'
+                  - 'iam:DetachUserPolicy'
+                  - 'iam:DetachGroupPolicy'
+                  - 'iam:DetachRolePolicy'
+                  - 'iam:DeleteRolePolicy'
+                  - 'iam:DeleteUserPolicy'
+                  - 'iam:DeleteGroupPolicy'
+                  - 'sns:Publish'
+                Resource:
+                  - 'arn:aws:iam::*:user/*'
+                  - 'arn:aws:iam::*:group/*'
+                  - 'arn:aws:iam::*:role/*'
+                  - 'arn:aws:iam::*:policy/*'
+                  - !Ref PolicyViolationTopic
+
+  PolicyMonitorFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: 'policy_monitor'
+      Runtime: 'python3.13'
+      Handler: 'policy_monitor.lambda_handler'
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        S3Bucket: !Sub 'automation-bucket-${AWS::AccountId}'
+        S3Key: policy_monitor-v1.zip
+      Environment:
+        Variables:
+          SNS_TOPIC_ARN: !Ref PolicyViolationTopic
+
+  LambdaInvokePermissionPolicyMonitor:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !Ref PolicyMonitorFunction
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn: !GetAtt PolicyMonitorRule.Arn
+
+  PolicyMonitorRule:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Name: 'monitor-iam-policy-changes'
+      Description: 'Monitor IAM policy changes for restricted actions'
+      EventPattern:
+        source:
+          - 'aws.iam'
+        detail-type:
+          - 'AWS API Call via CloudTrail'
+        detail:
+          eventSource:
+            - 'iam.amazonaws.com'
+          eventName:
+            - 'CreatePolicy'
+            - 'AttachUserPolicy'
+            - 'AttachRolePolicy'
+            - 'AttachGroupPolicy'
+            - 'CreatePolicyVersion'
+            - 'PutUserPolicy'
+            - 'PutGroupPolicy'
+            - 'PutRolePolicy'
+      Targets:
+        - Id: 'SendToLambda'
+          Arn: !GetAtt PolicyMonitorFunction.Arn

@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  CloudFormation template for creating a secure S3 bucket infrastructure for automation purposes.
+  The template creates an S3 bucket with server-side encryption using a dedicated KMS key.
+  
+  Resources created:
+  - KMS Key for encryption
+  - S3 Bucket with KMS encryption enabled
+  
+  Version: v1.0.0-beta.1
+  Author: Nick the Security Dude
+  Date: 12-22-2024
+  
+  DISCLAIMER: This template is provided for learning and demonstration purposes only, on an as-is basis 
+  without any guarantees or warranties.
+  
+  LICENSE: This work is licensed under the Creative Commons Attribution-NonCommercial (CC BY-NC) license.
+
+Resources:
+  AutomationBucketKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: KMS key for encrypting S3 bucket objects
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action: 'kms:*'
+            Resource: '*'
+
+  AutomationBucketKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: 'alias/automation-bucket-key'
+      TargetKeyId: !Ref AutomationBucketKey
+
+  AutomationBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'automation-bucket-${AWS::AccountId}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'aws:kms'
+              KMSMasterKeyID: !GetAtt AutomationBucketKey.Arn
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
