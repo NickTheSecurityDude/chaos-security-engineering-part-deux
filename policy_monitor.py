@@ -6,6 +6,45 @@ Date: 12-22-2024
 License: Creative Commons Attribution-NonCommercial (CC BY-NC)
 Copyright (c) 2024 Nick the Security Dude
 
+Feature: AWS IAM Policy Monitor
+  As a security administrator
+  I want to automatically monitor and enforce IAM policy restrictions
+  So that I can prevent unauthorized access and maintain security compliance
+
+  Background:
+    Given the AWS IAM Policy Monitor is running
+    And the monitor has access to IAM service
+
+  Scenario: Allow non-restricted inline policies for users
+    Given a user has an inline policy with non-restricted permissions
+    When the policy monitor evaluates the policy
+    Then the non-restricted inline policy should remain attached
+    And the policy should be found in the user's policy list
+
+  Scenario: Automatically remove restricted managed policies
+    Given a user has the AdministratorAccess managed policy attached
+    When the policy monitor detects the restricted policy
+    Then the AdministratorAccess policy should be automatically removed
+    And no managed policies should remain attached to the user
+
+  Scenario: Prevent IAM-specific inline policies
+    Given a user attempts to attach an inline policy with IAM permissions
+    When the policy monitor evaluates the policy
+    Then the IAM inline policy should be automatically removed
+    And no IAM-related policies should remain attached
+
+  Scenario: Allow policies for whitelisted roles
+    Given a role with a whitelisted prefix exists
+    When the role has CloudFront service permissions
+    Then the policy should remain attached to the role
+    And the policy monitor should not remove it
+
+  Scenario: Remove policies with restricted actions
+    Given a policy contains restricted actions like "iam:*"
+    When the policy monitor evaluates the policy
+    Then the policy should be automatically removed
+    And attempts to recreate the policy should be blocked
+
 This work is licensed under the Creative Commons Attribution-NonCommercial 4.0 
 International License. To view a copy of this license, visit 
 http://creativecommons.org/licenses/by-nc/4.0/ or send a letter to Creative 

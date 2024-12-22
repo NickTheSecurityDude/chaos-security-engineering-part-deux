@@ -18,6 +18,7 @@ Description: >-
   without any guarantees or warranties.
   
   LICENSE: This work is licensed under the Creative Commons Attribution-NonCommercial (CC BY-NC) license.
+  Copyright (c) 2024 Nick the Security Dude
 
 Resources:
 
@@ -86,7 +87,7 @@ Resources:
       Role: !GetAtt LambdaExecutionRole.Arn
       Code:
         S3Bucket: !Sub 'automation-bucket-${AWS::AccountId}'
-        S3Key: policy_monitor-v1.zip
+        S3Key: policy_monitor.zip
       Environment:
         Variables:
           SNS_TOPIC_ARN: !Ref PolicyViolationTopic

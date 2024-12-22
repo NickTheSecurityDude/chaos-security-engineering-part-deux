@@ -5,6 +5,44 @@ Version: v1.0.0-beta.1
 Author: Nick the Security Dude
 Date: 2024-01-17
 
+Feature: AWS IAM Policy Monitor Unit Tests
+  As a developer
+  I want to ensure the policy monitor works correctly through unit tests
+  So that I can verify all security controls are functioning as expected
+
+  Background:
+    Given the policy monitor unit test environment is set up
+    
+  Scenario: Test restricted action detection
+    Given a policy document with restricted IAM actions
+    When the policy validation function runs
+    Then it should identify the policy as restricted
+    And return the appropriate validation result
+
+  Scenario: Test whitelisted role handling
+    Given a role name with a whitelisted prefix
+    When the role validation function runs
+    Then it should identify the role as whitelisted
+    And allow the policy to remain attached
+
+  Scenario: Test policy cleanup operations
+    Given a list of non-compliant policies
+    When the cleanup function executes
+    Then it should remove all non-compliant policies
+    And log the removal actions
+
+  Scenario: Test policy validation edge cases
+    Given policies with special characters and Unicode
+    When the normalization and validation functions run
+    Then they should handle the special cases correctly
+    And maintain consistent validation results
+
+  Scenario: Test actual AWS API interactions
+    Given actual AWS IAM service responses
+    When the monitor attempts to modify policies
+    Then it should correctly handle API responses
+    And perform appropriate error handling
+
 License: Creative Commons Attribution-NonCommercial (CC BY-NC)
 Copyright (c) 2024 Nick the Security Dude
 
