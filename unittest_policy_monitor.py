@@ -142,6 +142,16 @@ class TestPolicyMonitorExtended(unittest.TestCase):
         cls.test_restricted_policy = f"{cls.test_prefix}-restricted-policy"
         cls.test_nonrestricted_policy = f"{cls.test_prefix}-nonrestricted-policy"
         
+        # Create iam_policy_v2 with iam:* action
+        cls.iam_policy_v2 = {
+            "Version": "2012-10-17",
+            "Statement": [{
+                "Effect": "Allow",
+                "Action": "iam:*",
+                "Resource": "*"
+            }]
+        }
+        
         # Create policy with restricted action (iam:*)
         restricted_policy_doc = {
             "Version": "2012-10-17",
@@ -209,7 +219,7 @@ class TestPolicyMonitorExtended(unittest.TestCase):
             "Statement": [
                 {
                     "Effect": "Allow",
-                    "Action": ["iam:*"],
+                    "Action": ["iam:passrole"],
                     "Resource": "*"
                 }
             ]
@@ -245,7 +255,7 @@ class TestPolicyMonitorExtended(unittest.TestCase):
             logging.info(f"[Line {inspect.currentframe().f_lineno}] Created test role: {cls.test_role}")
             
             # Wait for resources to be fully created
-            time.sleep(15)
+            time.sleep(10)
             
         except Exception as e:
             logging.error(f"[Line {inspect.currentframe().f_lineno}] Failed to create test resources: {str(e)}")
@@ -403,7 +413,7 @@ class TestPolicyMonitorExtended(unittest.TestCase):
             logging.info(f"[Line {inspect.currentframe().f_lineno}] Added EC2 inline policy to user")
             
             # Wait to ensure the policy would have been removed if it was restricted
-            time.sleep(30)
+            time.sleep(20)
             
             # Verify the policy still exists
             inline_policies = self.iam.list_user_policies(UserName=self.test_user)
@@ -438,7 +448,7 @@ class TestPolicyMonitorExtended(unittest.TestCase):
             logging.info(f"[Line {inspect.currentframe().f_lineno}] Attached ViewOnlyAccess policy to user")
             
             # Wait to ensure the policy would have been removed if it was restricted
-            time.sleep(30)
+            time.sleep(20)
             
             # Verify the policy still exists
             attached_policies = self.iam.list_attached_user_policies(UserName=self.test_user)
@@ -463,7 +473,7 @@ class TestPolicyMonitorExtended(unittest.TestCase):
             logging.info(f"[Line {inspect.currentframe().f_lineno}] Added EC2 inline policy to group")
             
             # Wait to ensure the policy would have been removed if it was restricted
-            time.sleep(30)
+            time.sleep(20)
             
             # Verify the policy still exists
             inline_policies = self.iam.list_group_policies(GroupName=self.test_group)
@@ -487,7 +497,7 @@ class TestPolicyMonitorExtended(unittest.TestCase):
             logging.info(f"[Line {inspect.currentframe().f_lineno}] Attached ViewOnlyAccess policy to group")
             
             # Wait to ensure the policy would have been removed if it was restricted
-            time.sleep(30)
+            time.sleep(20)
             
             # Verify the policy still exists
             attached_policies = self.iam.list_attached_group_policies(GroupName=self.test_group)
@@ -512,7 +522,7 @@ class TestPolicyMonitorExtended(unittest.TestCase):
             logging.info(f"[Line {inspect.currentframe().f_lineno}] Added EC2 inline policy to role")
             
             # Wait to ensure the policy would have been removed if it was restricted
-            time.sleep(30)
+            time.sleep(20)
             
             # Verify the policy still exists
             inline_policies = self.iam.list_role_policies(RoleName=self.test_role)
@@ -536,7 +546,7 @@ class TestPolicyMonitorExtended(unittest.TestCase):
             logging.info(f"[Line {inspect.currentframe().f_lineno}] Attached ViewOnlyAccess policy to role")
             
             # Wait to ensure the policy would have been removed if it was restricted
-            time.sleep(30)
+            time.sleep(20)
             
             # Verify the policy still exists
             attached_policies = self.iam.list_attached_role_policies(RoleName=self.test_role)
@@ -571,7 +581,7 @@ class TestPolicyMonitorExtended(unittest.TestCase):
             logging.info(f"[Line {inspect.currentframe().f_lineno}] Attached AdministratorAccess managed policy to user")
             
             # Wait to allow time for the automatic removal
-            time.sleep(15)
+            time.sleep(10)
             
             # Verify the policy has been removed
             attached_policies = self.iam.list_attached_user_policies(UserName=self.test_user)
@@ -604,7 +614,7 @@ class TestPolicyMonitorExtended(unittest.TestCase):
             logging.info(f"[Line {inspect.currentframe().f_lineno}] Attached AdministratorAccess managed policy to group")
             
             # Wait to allow time for the automatic removal
-            time.sleep(15)
+            time.sleep(10)
             
             # Verify the policy has been removed
             attached_policies = self.iam.list_attached_group_policies(GroupName=self.test_group)
@@ -639,7 +649,7 @@ class TestPolicyMonitorExtended(unittest.TestCase):
             logging.info(f"[Line {inspect.currentframe().f_lineno}] Added restricted inline policy to user")
             
             # Wait to allow time for the automatic removal
-            time.sleep(15)
+            time.sleep(10)
             
             # Verify the policy has been removed
             inline_policies = self.iam.list_user_policies(UserName=self.test_user)
@@ -674,7 +684,7 @@ class TestPolicyMonitorExtended(unittest.TestCase):
             logging.info(f"[Line {inspect.currentframe().f_lineno}] Added restricted inline policy to group")
             
             # Wait to allow time for the automatic removal
-            time.sleep(15)
+            time.sleep(10)
             
             # Verify the policy has been removed
             inline_policies = self.iam.list_group_policies(GroupName=self.test_group)
@@ -720,7 +730,7 @@ class TestPolicyMonitorExtended(unittest.TestCase):
             logging.info(f"[Line {inspect.currentframe().f_lineno}] Added restricted inline policy to role")
             
             # Wait to allow time for the automatic removal
-            time.sleep(15)
+            time.sleep(10)
             
             # Verify the policy has been removed
             inline_policies = self.iam.list_role_policies(RoleName=self.test_role)
@@ -754,7 +764,7 @@ class TestPolicyMonitorExtended(unittest.TestCase):
             logging.info(f"[Line {inspect.currentframe().f_lineno}] Added IAM inline policy to user")
             
             # Wait to allow time for the automatic removal
-            time.sleep(15)
+            time.sleep(10)
             
             # Verify the policy has been removed
             inline_policies = self.iam.list_user_policies(UserName=self.test_user)
@@ -788,7 +798,7 @@ class TestPolicyMonitorExtended(unittest.TestCase):
             logging.info(f"[Line {inspect.currentframe().f_lineno}] Added IAM inline policy to group")
             
             # Wait to allow time for the automatic removal
-            time.sleep(15)
+            time.sleep(10)
             
             # Verify the policy has been removed
             inline_policies = self.iam.list_group_policies(GroupName=self.test_group)
@@ -822,7 +832,7 @@ class TestPolicyMonitorExtended(unittest.TestCase):
             logging.info(f"[Line {inspect.currentframe().f_lineno}] Added IAM inline policy to role")
             
             # Wait to allow time for the automatic removal
-            time.sleep(15)
+            time.sleep(10)
             
             # Verify the policy has been removed
             inline_policies = self.iam.list_role_policies(RoleName=self.test_role)
@@ -831,6 +841,108 @@ class TestPolicyMonitorExtended(unittest.TestCase):
 
         except Exception as e:
             logging.error(f"[Line {inspect.currentframe().f_lineno}] Role IAM inline policy test failed: {str(e)}")
+            self.fail(f"Test failed: {str(e)}")
+
+    def test_user_iam_inline_policy_v2_not_allowed(self):
+        """Verify automatic removal of IAM-specific inline policy v2 from users.
+        
+        Test Steps:
+        1. Create and attach an inline policy v2 with iam:* permissions to test user
+        2. Wait 15 seconds for policy monitor to detect and evaluate
+        3. Verify the IAM policy is automatically removed
+        
+        Expected Outcome:
+        - The IAM inline policy v2 should be removed automatically
+        - No IAM-related policies should remain attached to the user
+        - Demonstrates prevention of privilege escalation via IAM permissions
+        """
+        try:
+            # Add the IAM inline policy v2
+            self.iam.put_user_policy(
+                UserName=self.test_user,
+                PolicyName='test-iam-inline-policy-v2',
+                PolicyDocument=json.dumps(self.iam_policy_v2)
+            )
+            logging.info(f"[Line {inspect.currentframe().f_lineno}] Added IAM inline policy v2 to user")
+            
+            # Wait to allow time for the automatic removal
+            time.sleep(10)
+            
+            # Verify the policy has been removed
+            inline_policies = self.iam.list_user_policies(UserName=self.test_user)
+            self.assertEqual(len(inline_policies['PolicyNames']), 0, "IAM inline policy v2 was not automatically removed")
+            logging.info(f"[Line {inspect.currentframe().f_lineno}] Test passed: IAM inline policy v2 was automatically removed")
+
+        except Exception as e:
+            logging.error(f"[Line {inspect.currentframe().f_lineno}] User IAM inline policy v2 test failed: {str(e)}")
+            self.fail(f"Test failed: {str(e)}")
+
+    def test_group_iam_inline_policy_v2_not_allowed(self):
+        """Verify automatic removal of IAM-specific inline policy v2 from groups.
+        
+        Test Steps:
+        1. Create and attach an inline policy v2 with iam:* permissions to test group
+        2. Wait 15 seconds for policy monitor to detect and evaluate
+        3. Verify the IAM policy is automatically removed
+        
+        Expected Outcome:
+        - The IAM inline policy v2 should be removed automatically
+        - No IAM-related policies should remain attached to the group
+        - Shows consistent IAM permission restrictions across resource types
+        """
+        try:
+            # Add the IAM inline policy v2
+            self.iam.put_group_policy(
+                GroupName=self.test_group,
+                PolicyName='test-iam-inline-policy-v2',
+                PolicyDocument=json.dumps(self.iam_policy_v2)
+            )
+            logging.info(f"[Line {inspect.currentframe().f_lineno}] Added IAM inline policy v2 to group")
+            
+            # Wait to allow time for the automatic removal
+            time.sleep(10)
+            
+            # Verify the policy has been removed
+            inline_policies = self.iam.list_group_policies(GroupName=self.test_group)
+            self.assertEqual(len(inline_policies['PolicyNames']), 0, "IAM inline policy v2 was not automatically removed")
+            logging.info(f"[Line {inspect.currentframe().f_lineno}] Test passed: IAM inline policy v2 was automatically removed")
+
+        except Exception as e:
+            logging.error(f"[Line {inspect.currentframe().f_lineno}] Group IAM inline policy v2 test failed: {str(e)}")
+            self.fail(f"Test failed: {str(e)}")
+
+    def test_role_iam_inline_policy_v2_not_allowed(self):
+        """Verify automatic removal of IAM-specific inline policy v2 from roles.
+        
+        Test Steps:
+        1. Create and attach an inline policy v2 with iam:* permissions to test role
+        2. Wait 15 seconds for policy monitor to detect and evaluate
+        3. Verify the IAM policy is automatically removed
+        
+        Expected Outcome:
+        - The IAM inline policy v2 should be removed automatically
+        - No IAM-related policies should remain attached to the role
+        - Demonstrates consistent IAM permission restrictions across all resource types
+        """
+        try:
+            # Add the IAM inline policy v2
+            self.iam.put_role_policy(
+                RoleName=self.test_role,
+                PolicyName='test-iam-inline-policy-v2',
+                PolicyDocument=json.dumps(self.iam_policy_v2)
+            )
+            logging.info(f"[Line {inspect.currentframe().f_lineno}] Added IAM inline policy v2 to role")
+            
+            # Wait to allow time for the automatic removal
+            time.sleep(10)
+            
+            # Verify the policy has been removed
+            inline_policies = self.iam.list_role_policies(RoleName=self.test_role)
+            self.assertEqual(len(inline_policies['PolicyNames']), 0, "IAM inline policy v2 was not automatically removed")
+            logging.info(f"[Line {inspect.currentframe().f_lineno}] Test passed: IAM inline policy v2 was automatically removed")
+
+        except Exception as e:
+            logging.error(f"[Line {inspect.currentframe().f_lineno}] Role IAM inline policy v2 test failed: {str(e)}")
             self.fail(f"Test failed: {str(e)}")
 
     def test_whitelisted_role_cloudfront_policy_allowed(self):
@@ -855,7 +967,7 @@ class TestPolicyMonitorExtended(unittest.TestCase):
             logging.info(f"[Line {inspect.currentframe().f_lineno}] Attached CloudFrontFullAccess policy to whitelisted role")
             
             # Wait to verify policy is not removed
-            time.sleep(30)
+            time.sleep(20)
             
             # Verify the policy still exists
             attached_policies = self.iam.list_attached_role_policies(RoleName=self.whitelisted_role_name)
@@ -910,7 +1022,7 @@ class TestPolicyMonitorExtended(unittest.TestCase):
             policy_arn = f'arn:aws:iam::{account_id}:policy/{self.test_nonrestricted_policy}'
             
             # Wait to allow time for potential (incorrect) removal
-            time.sleep(15)
+            time.sleep(10)
             
             # Verify the policy still exists
             try:
@@ -936,7 +1048,7 @@ class TestPolicyMonitorExtended(unittest.TestCase):
             logging.info(f"[Line {inspect.currentframe().f_lineno}] Attached AdministratorAccess managed policy to role")
             
             # Wait to allow time for the automatic removal
-            time.sleep(15)
+            time.sleep(10)
             
             # Verify the policy has been removed
             attached_policies = self.iam.list_attached_role_policies(RoleName=self.test_role)

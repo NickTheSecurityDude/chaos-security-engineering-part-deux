@@ -110,10 +110,10 @@ def has_restricted_actions(policy_doc):
         
     Description:
         Analyzes a policy document for potentially risky permissions including:
-        - Wildcard (*) permissions
-        - Full IAM access
-        - Full Organizations access
-        - Full STS access
+        - Wildcard (*) permissions (exact match)
+        - Any IAM actions
+        - Any Organizations actions
+        - Any STS actions
         Handles Unicode normalization for consistent string comparison
     """
     import unicodedata
@@ -121,17 +121,31 @@ def has_restricted_actions(policy_doc):
     restricted_actions = [
         '*',
         'iam:*',
-        'organizations:*',
-        'sts:*'
+        'iam:PassRole',
+        'sts:*',
+        'sts:AssumeRole'
     ]
     
+    restricted_patterns = [
+        'iam:Attach',
+        'iam:Create',
+        'iam:Delete',
+        'iam:Put',        
+        'iam:Set',
+        'iam:Update',
+        'iam:Upload'
+    ]
+
     def normalize_string(s):
         """Normalize unicode strings to their ASCII form."""
         # Normalize to NFKC form and then encode to ASCII, ignoring non-ASCII chars
         return unicodedata.normalize('NFKC', s).encode('ascii', 'ignore').decode('ascii').lower()
     
     # Normalize restricted actions
-    normalized_restricted = [normalize_string(action) for action in restricted_actions]
+    normalized_restricted_actions = [normalize_string(action) for action in restricted_actions]
+
+    # Normalize restricted patterns
+    normalized_restricted_patterns = [normalize_string(action) for action in restricted_patterns]
     
     for statement in policy_doc.get('Statement', []):
         actions = statement.get('Action', [])
@@ -140,8 +154,14 @@ def has_restricted_actions(policy_doc):
         for action in actions:
             # Normalize the action before comparison
             normalized_action = normalize_string(action)
-            if normalized_action in normalized_restricted:
-                return True
+            # Check restricted actions
+            for restricted_action in normalized_restricted_actions:
+                if normalized_action==restricted_action:
+                    return True
+            # Check restricted patterns
+            for restricted_pattern in normalized_restricted_patterns:
+                if normalized_action.startswith(restricted_pattern):
+                    return True
     return False
 
 def check_inline_policies(entity_type, entity_name, policy_name):
